@@ -24,7 +24,7 @@ main{flex:1;width:100%;max-width:1000px;margin:0 auto;padding:18px 14px 10px;dis
 main h2{margin:0;font-size:clamp(20px,2.8vw,26px);color:var(--navy);font-weight:800}
 .laptop{width:100%;max-width:900px;padding:0 4%}
 .screen{background:#1E2430;border-radius:18px 18px 6px 6px;padding:14px 14px 18px;box-shadow:0 14px 30px rgba(18,48,107,.18)}
-.stage{position:relative;aspect-ratio:1280/752;background:#fff;border-radius:6px;overflow:hidden;max-height:calc(100svh - 440px);margin:0 auto}
+.stage{position:relative;aspect-ratio:1280/752;background:#fff;border-radius:6px;overflow:hidden;margin:0 auto}
 .stage video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:#fff;cursor:pointer;opacity:0;transition:opacity .25s ease}.stage video.on{opacity:1;z-index:1}
 .base{height:16px;margin:0 -4%;background:linear-gradient(#C9CED8,#A9B0BD);border-radius:0 0 22px 22px;position:relative}
 .base::after{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);width:16%;height:6px;background:#9AA2B0;border-radius:0 0 8px 8px}
@@ -45,6 +45,31 @@ main h2{margin:0;font-size:clamp(20px,2.8vw,26px);color:var(--navy);font-weight:
 button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 footer{text-align:center;font-size:14px;color:var(--ink2);padding:6px 0 16px}
 footer b{color:var(--navy)}
+
+/* mobile: interleave */
+.side{display:contents}
+main h2{order:1}.laptop{order:2}.cap{order:3}.dots{order:4}.ctrl{order:5}
+/* desktop: one screen, side by side */
+@media (min-width:900px) and (min-aspect-ratio:5/4){
+  body{height:100svh;overflow:hidden}
+  header{padding:clamp(10px,2.2vh,22px) 16px clamp(12px,2.4vh,24px)}
+  header h1{font-size:clamp(26px,4.6vh,44px)}
+  header p{margin:clamp(4px,1vh,10px) auto clamp(8px,1.6vh,16px);font-size:clamp(15px,2.4vh,20px)}
+  .cta{min-height:clamp(44px,7vh,62px);padding:6px 30px;font-size:clamp(18px,3vh,24px)}
+  .cta-note{margin-top:clamp(4px,1vh,10px);font-size:clamp(12px,1.8vh,15px)}
+  main{flex:1;min-height:0;max-width:1400px;width:100%;display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);align-items:center;gap:clamp(16px,3vw,44px);padding:clamp(10px,2vh,22px) 28px}
+  .side{display:flex;flex-direction:column;align-items:stretch;gap:clamp(10px,2vh,18px)}
+  main h2{text-align:center}
+  .cap{min-height:3.6em;font-size:clamp(17px,2.6vh,21px)}
+  .ctrl{max-width:none}
+  .ctrl button.nav{min-height:clamp(46px,7vh,56px)}
+  main{align-self:stretch}
+  .laptop{max-width:none;height:100%;min-height:0;container-type:size;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0}
+  .screen{width:fit-content}
+  .stage{width:min(calc(100cqw - 110px), calc((100cqh - 60px) * 1.7021));aspect-ratio:1280/752}
+  .base{width:calc(min(calc(100cqw - 110px), calc((100cqh - 60px) * 1.7021)) + 28px + 8%);margin:0}
+  footer{padding:2px 0 10px}
+}
 @media (max-width:600px){header{padding:20px 12px 24px}.screen{padding:8px 8px 12px;border-radius:12px 12px 4px 4px}.stage{max-height:none}.ctrl{gap:10px}}
 </style>
 </head>
@@ -59,14 +84,16 @@ footer b{color:var(--navy)}
   <span class="cta-note">נפתח בג׳מיני בחלון חדש · עדיף במחשב · פחות מדקה</span>
 </header>
 <main>
-  <h2>איך מתקינים? צעד אחר צעד</h2>
+  <div class="side">
+    <h2>איך מתקינים? צעד אחר צעד</h2>
+    <div class="cap" id="cap" aria-live="polite"></div>
+    <div class="dots" id="dots" aria-label="צעדים"></div>
+    <div class="ctrl"><button type="button" class="nav" id="prev">→ הקודם</button><button type="button" class="nav" id="next">הבא ←</button></div>
+  </div>
   <div class="laptop" aria-label="הדגמה על מסך מחשב">
     <div class="screen"><div class="stage"><video class="vv on" muted playsinline preload="auto" poster="media/poster.jpg"></video><video class="vv" muted playsinline preload="auto"></video></div></div>
     <div class="base" aria-hidden="true"></div>
   </div>
-  <div class="cap" id="cap" aria-live="polite"></div>
-  <div class="dots" id="dots" aria-label="צעדים"></div>
-  <div class="ctrl"><button type="button" class="nav" id="prev">→ הקודם</button><button type="button" class="nav" id="next">הבא ←</button></div>
 </main>
 <footer><b>נתראה מחר!</b> · ממעבדת הניסויים של מרי גרבי</footer>
 <script>
@@ -96,6 +123,8 @@ footer b{color:var(--navy)}
     });
   }
   vids.forEach(function(v){ v.addEventListener('click',function(){ go(i); }); });
+  var loopT=null;
+  vids.forEach(function(v){ v.addEventListener('ended',function(){ if(!v.classList.contains('on')) return; var t=token; clearTimeout(loopT); loopT=setTimeout(function(){ if(t===token&&v.classList.contains('on')){ v.currentTime=0; var p=v.play(); if(p&&p.catch)p.catch(function(){}); } },1800); }); });
   prev.onclick=function(){go(i-1);}; next.onclick=function(){go(i===S.length-1?0:i+1);};
   document.addEventListener('keydown',function(e){if(e.target.closest&&e.target.closest('a'))return;if(e.key==='ArrowLeft')next.click();else if(e.key==='ArrowRight'&&i>0)go(i-1);});
   var x0=null,st=document.querySelector('.stage');
