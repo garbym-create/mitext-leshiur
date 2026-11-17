@@ -124,7 +124,7 @@ main h2{order:1}.laptop{order:2}.cap{order:3}.dots{order:4}.ctrl{order:5}
   }
   vids.forEach(function(v){ v.addEventListener('click',function(){ go(i); }); });
   var loopT=null;
-  vids.forEach(function(v){ v.addEventListener('ended',function(){ if(!v.classList.contains('on')) return; var t=token; clearTimeout(loopT); loopT=setTimeout(function(){ if(t===token&&v.classList.contains('on')){ v.currentTime=0; var p=v.play(); if(p&&p.catch)p.catch(function(){}); } },1800); }); });
+  vids.forEach(function(v){ v.addEventListener('ended',function(){ if(!v.classList.contains('on')) return; var t=token; clearTimeout(loopT); loopT=setTimeout(function(){ if(t===token&&v.classList.contains('on')){ v.currentTime=0; var p=v.play(); if(p&&p.catch)p.catch(function(){}); } }, i===0?600:1500); }); });
   prev.onclick=function(){go(i-1);}; next.onclick=function(){go(i===S.length-1?0:i+1);};
   document.addEventListener('keydown',function(e){if(e.target.closest&&e.target.closest('a'))return;if(e.key==='ArrowLeft')next.click();else if(e.key==='ArrowRight'&&i>0)go(i-1);});
   var x0=null,st=document.querySelector('.stage');
